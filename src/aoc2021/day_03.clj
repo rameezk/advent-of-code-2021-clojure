@@ -3,19 +3,6 @@
             [aoc2021.utils :refer [get-input]]))
 
 (def day "03")
-(def sample-input '("00100"
-                    "11110"
-                    "10110"
-                    "10111"
-                    "10101"
-                    "01111"
-                    "00111"
-                    "11100"
-                    "10000"
-                    "11001"
-                    "00010"
-                    "01010"))
-
 (def input
   (str/split-lines
    (get-input day)))
@@ -33,11 +20,17 @@
 (defn- most-frequent-bit
   "Get the most frequent bit in a bit string"
   [bs]
-  (->> bs
-       frequencies
-       (sort-by val)
-       last
-       first))
+  (let [f (frequencies bs)
+        count-0s (get f \0)
+        count-1s (get f \1)]
+    (cond
+      (= count-0s count-1s) \1
+      (> count-0s count-1s) \0
+      (< count-0s count-1s) \1)))
+
+(defn- least-frequent-bit
+  [bs]
+  (flip-bit (most-frequent-bit bs)))
 
 (defn bit-str->decimal
   "Convert bit string to decimal"
@@ -66,8 +59,6 @@
    #(= (nth % pos) bit)
    xs))
 
-(+ 1 1)
-
 (defn- slice-at-position
   "Get the vertical slice at a position"
   [pos m]
@@ -88,33 +79,13 @@
           (recur filtered-bit-strings (inc pos)))
         bit-strings)))))
 
-(defn- oxygen-rating-bit-selector
-  [bs]
-  (let [f (frequencies bs)
-        count-0s (get f \0)
-        count-1s (get f \1)]
-    (cond
-      (= count-0s count-1s) \1
-      (> count-0s count-1s) \0
-      (< count-0s count-1s) \1)))
-
-(defn- co2-scrubber-rating-bit-selector
-  [bs]
-  (let [f (frequencies bs)
-        count-0s (get f \0)
-        count-1s (get f \1)]
-    (cond
-      (= count-0s count-1s) \0
-      (> count-0s count-1s) \1
-      (< count-0s count-1s) \0)))
-
 (defn- calculate-oxygen-rating
   [input]
-  (calculate-rating-builder oxygen-rating-bit-selector input))
+  (calculate-rating-builder most-frequent-bit input))
 
 (defn- calculate-co2-scrubber-rating
   [input]
-  (calculate-rating-builder co2-scrubber-rating-bit-selector input))
+  (calculate-rating-builder least-frequent-bit input))
 
 (defn- calculate-life-support-rating
   [input]
